@@ -91,5 +91,7 @@ O app é 100% estático (não tem backend nem login), então basta a Vercel:
 2. A Vercel detecta o Vite sozinha; build `npm run build`, saída `dist`. Não há variáveis de ambiente.
 3. Clique em **Deploy**. A cada push no `main` sai um deploy novo, e cada PR ganha uma URL de preview.
 
+O site usa o [Vercel Web Analytics](https://vercel.com/docs/analytics) para contar visitas e páginas vistas (sem cookies). O `#` da URL é removido antes do envio, então o SQL de um link compartilhado nunca chega ao painel. Para ver os números, ative **Analytics** no projeto da Vercel.
+
 O [`vercel.json`](vercel.json) define headers de segurança (CSP, HSTS, `X-Frame-Options`…) e cache permanente para `/assets`. O `npm run preview` serve os mesmos headers, para testar localmente antes de publicar.
 
