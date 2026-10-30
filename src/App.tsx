@@ -60,7 +60,7 @@ export function App() {
   });
   const [positionsMap, setPositionsMap] = useState<Positions>(() => loadPositions(tabs));
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
-    readStorage(STORAGE_KEYS.theme) === 'light' ? 'light' : 'dark'
+    readStorage(STORAGE_KEYS.theme) === 'dark' ? 'dark' : 'light'
   );
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
