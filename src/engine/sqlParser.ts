@@ -45,6 +45,17 @@ const TABLE_PK_RE = /^(?:CONSTRAINT\s+[`"]?\w+[`"]?\s+)?PRIMARY\s+KEY\s*\(([^)]+
 const TABLE_UNIQUE_RE = /^(?:CONSTRAINT\s+[`"]?\w+[`"]?\s+)?UNIQUE(?:\s+(?:KEY|INDEX))?\s*(?:[`"]?\w+[`"]?\s*)?\(([^)]+)\)/i;
 // Type name (possibly multi-word, e.g. DOUBLE PRECISION) followed by an optional (size)
 const COLUMN_TYPE_RE = /^([A-Za-z_]\w*(?:\s+(?:PRECISION|VARYING|UNSIGNED|SIGNED|ZEROFILL))*)\s*(\([^)]*\))?(\s*\[\])?/i;
+// Start of a stored routine whose body may contain INSERTs that only run later
+const ROUTINE_RE = /\bCREATE\s+(?:OR\s+REPLACE\s+)?(?:DEFINER\s*=\s*\S+\s+)?(?:TRIGGER|PROCEDURE|FUNCTION|EVENT)\b/gi;
+const TRIGGER_HEADER_RE = new RegExp(
+  String.raw`^CREATE\s+(?:OR\s+REPLACE\s+)?(?:DEFINER\s*=\s*\S+\s+)?TRIGGER\s+(?:IF\s+NOT\s+EXISTS\s+)?${IDENT}\s+(BEFORE|AFTER|INSTEAD\s+OF)\s+([\s\S]+?)\s+ON\s+${IDENT}`,
+  'i'
+);
+// Tables a trigger body writes to; UPDATE needs SET so "ON DUPLICATE KEY UPDATE col = …" doesn't count
+const BODY_WRITE_RE = new RegExp(
+  String.raw`\b(?:INSERT\s+(?:IGNORE\s+)?INTO|DELETE\s+FROM)\s+${IDENT}|\bUPDATE\s+${IDENT}\s+(?:\w+\s+)?SET\b`,
+  'gi'
+);
 
 /**
  * Parse the SQL into tables (with columns and sample rows) and FK relationships.
@@ -65,6 +76,11 @@ export function parseSqlLive(
 
   const cleanedSql = stripComments(sql);
 
+  // Trigger/procedure/function bodies: their statements only run later, so they don't create
+  // tables or rows now (an INSERT inside a trigger would otherwise show "OLD.preco" as data)
+  const routines = findRoutineRanges(cleanedSql);
+  const insideRoutine = (index: number) => routines.some((r) => index > r.start && index < r.end);
+
   // 1. Extract CREATE TABLE statements with balanced parenthesis tracking
   const createTableRegex = new RegExp(CREATE_TABLE_RE.source, CREATE_TABLE_RE.flags);
   let match: RegExpExecArray | null;
@@ -72,7 +88,7 @@ export function parseSqlLive(
 
   while ((match = createTableRegex.exec(cleanedSql)) !== null) {
     const rawTableName = match[1];
-    if (!rawTableName) continue;
+    if (!rawTableName || insideRoutine(match.index)) continue;
 
     const tableName = rawTableName.toLowerCase();
 
@@ -231,11 +247,52 @@ export function parseSqlLive(
       name: tableName,
       columns,
       rows: [],
+      triggers: [],
       position,
     });
   }
 
   const tableByName = new Map(tables.map((t) => [t.name, t]));
+
+  // Tables written by each procedure/function, so a trigger that calls one shows them too
+  // (PostgreSQL triggers always do: EXECUTE FUNCTION fn(); MySQL ones may CALL a procedure)
+  const routineWrites = new Map<string, string[]>();
+  for (const routine of routines) {
+    const text = cleanedSql.slice(routine.start, routine.end);
+    const named = text.match(new RegExp(String.raw`^CREATE\s+(?:OR\s+REPLACE\s+)?(?:DEFINER\s*=\s*\S+\s+)?(?:PROCEDURE|FUNCTION)\s+(?:IF\s+NOT\s+EXISTS\s+)?${IDENT}`, 'i'));
+    if (named) routineWrites.set(named[1].toLowerCase(), tablesWrittenBy(text.slice(named[0].length)));
+  }
+
+  // Attach each CREATE TRIGGER to the table it fires on
+  for (const routine of routines) {
+    const header = cleanedSql.slice(routine.start, routine.end).match(TRIGGER_HEADER_RE);
+    if (!header) continue; // procedure, function or event
+
+    const [, name, timing, eventText, onTable] = header;
+    const table = tableByName.get(onTable.toLowerCase());
+    if (!table) {
+      errors.push(`Trigger "${name}": a tabela "${onTable}" não foi criada.`);
+      continue;
+    }
+
+    const body = cleanedSql.slice(routine.start + header[0].length, routine.end);
+    const writesTo = new Set(tablesWrittenBy(body));
+    for (const call of body.matchAll(/\b(?:EXECUTE\s+(?:FUNCTION|PROCEDURE)|CALL)\s+(?:\w+\.)?(\w+)/gi)) {
+      routineWrites.get(call[1].toLowerCase())?.forEach((t) => writesTo.add(t));
+    }
+    for (const written of writesTo) {
+      if (!tableByName.has(written)) {
+        errors.push(`Trigger "${name}": escreve na tabela "${written}", que não foi criada.`);
+      }
+    }
+
+    table.triggers.push({
+      name,
+      timing: timing.toUpperCase().replace(/\s+/g, ' '),
+      events: Array.from(eventText.toUpperCase().matchAll(/\b(INSERT|UPDATE|DELETE|TRUNCATE)\b/g), (e) => e[1]),
+      writesTo: Array.from(writesTo),
+    });
+  }
 
   // 2. Resolve FK targets: a REFERENCES without a column list points at the parent's primary key
   const resolvedRelationships: Relationship[] = [];
@@ -273,6 +330,7 @@ export function parseSqlLive(
   const reportedUnknownTables = new Set<string>();
 
   while ((insertMatch = insertRegex.exec(cleanedSql)) !== null) {
+    if (insideRoutine(insertMatch.index)) continue;
     const targetTable = insertMatch[1].toLowerCase();
     const table = tableByName.get(targetTable);
     if (!table) {
@@ -352,6 +410,90 @@ function addRelationship(
     targetColumn,
     cardinality: '1:N',
   });
+}
+
+/** Lowercased names of the tables a routine body writes to (INSERT INTO / UPDATE … SET / DELETE FROM) */
+function tablesWrittenBy(body: string): string[] {
+  const written = new Set<string>();
+  for (const w of body.matchAll(new RegExp(BODY_WRITE_RE.source, BODY_WRITE_RE.flags))) {
+    written.add((w[1] ?? w[2]).toLowerCase());
+  }
+  return Array.from(written);
+}
+
+/** [start, end) of every CREATE TRIGGER / PROCEDURE / FUNCTION / EVENT statement */
+function findRoutineRanges(sql: string): { start: number; end: number }[] {
+  // MySQL scripts switch the statement terminator (DELIMITER $$) around routines
+  const delimiterChanges = Array.from(sql.matchAll(/^\s*DELIMITER\s+(\S+)\s*$/gim), (d) => ({ at: d.index, delimiter: d[1] }));
+  const delimiterAt = (index: number) =>
+    delimiterChanges.filter((d) => d.at < index).pop()?.delimiter ?? ';';
+
+  const ranges: { start: number; end: number }[] = [];
+  const re = new RegExp(ROUTINE_RE.source, ROUTINE_RE.flags);
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(sql)) !== null) {
+    const end = findRoutineEnd(sql, m.index + m[0].length, delimiterAt(m.index));
+    ranges.push({ start: m.index, end });
+    re.lastIndex = end;
+  }
+  return ranges;
+}
+
+/**
+ * End of a routine whose header ends at `from`. The body is whichever comes first:
+ * - a BEGIN … END block (MySQL), matched by depth since IF/CASE/LOOP nest inside it
+ * - a $tag$ … $tag$ dollar-quoted body (PostgreSQL functions), followed by its ";"
+ * - otherwise a single statement ending at the delimiter (EXECUTE FUNCTION f(); SET NEW.x = 1$$)
+ */
+function findRoutineEnd(sql: string, from: number, delimiter: string): number {
+  let depth = 0;
+  for (let i = from; i < sql.length; i++) {
+    const ch = sql[i];
+
+    if (ch === "'" || ch === '"' || ch === '`') {
+      i = findQuoteEnd(sql, i);
+      continue;
+    }
+
+    // A custom delimiter ($$, //…) ends the statement; checked before $$ dollar-quoting
+    if (delimiter !== ';' && depth === 0 && sql.startsWith(delimiter, i)) return i;
+
+    if (ch === '$' && delimiter === ';') {
+      const tag = sql.slice(i).match(/^\$(\w*)\$/)?.[0];
+      if (tag) {
+        const close = sql.indexOf(tag, i + tag.length);
+        if (close === -1) return sql.length;
+        i = close + tag.length - 1;
+        continue;
+      }
+    }
+
+    if (ch === ';' && depth === 0) return i + 1;
+
+    if (/[A-Za-z_]/.test(ch) && !/\w/.test(sql[i - 1] ?? '')) {
+      const word = sql.slice(i).match(/^\w+/)![0].toUpperCase();
+      if (word === 'BEGIN' || (word === 'CASE' && depth > 0)) {
+        depth++;
+      } else if (word === 'END' && depth > 0) {
+        const nextMatch = sql.slice(i + 3).match(/^\s+(\w+)/);
+        const next = nextMatch?.[1].toUpperCase();
+        if (next && ['IF', 'LOOP', 'WHILE', 'REPEAT'].includes(next)) {
+          // END IF / END LOOP / … close blocks we don't count
+          i += 3 + nextMatch![0].length - 1;
+          continue;
+        }
+        depth--;
+        if (depth === 0) return i + 3;
+        if (next === 'CASE') {
+          // END CASE closes the CASE statement; don't read that CASE as a new one
+          i += 3 + nextMatch![0].length - 1;
+          continue;
+        }
+      }
+      i += word.length - 1;
+    }
+  }
+  return sql.length;
 }
 
 /** Remove -- and /* *\/ comments, leaving string literals untouched */

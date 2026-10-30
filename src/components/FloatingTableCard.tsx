@@ -10,7 +10,9 @@ import {
   HelpCircle,
   Table as TableIcon,
   Eye,
-  Rows
+  Rows,
+  Zap,
+  ArrowRight,
 } from 'lucide-react';
 import type { ColumnCategory, Table } from '../types/schema';
 import {
@@ -19,7 +21,11 @@ import {
   CARD_HEADER_HEIGHT,
   CARD_ROW_GAP,
   CARD_ROW_HEIGHT,
+  CARD_TRIGGER_PADDING,
+  CARD_TRIGGER_ROW_GAP,
+  CARD_TRIGGER_ROW_HEIGHT,
   CARD_WIDTH,
+  triggerRowHeight,
 } from '../engine/layout';
 
 interface FloatingTableCardProps {
@@ -184,6 +190,7 @@ export const FloatingTableCard: React.FC<FloatingTableCardProps> = ({
             </h3>
             <span className={`text-[10px] font-sans block -mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
               {table.columns.length} atributos • {table.rows.length} {table.rows.length === 1 ? 'registro' : 'registros'}
+              {table.triggers.length > 0 && ` • ${table.triggers.length} ${table.triggers.length === 1 ? 'trigger' : 'triggers'}`}
             </span>
           </div>
         </div>
@@ -304,6 +311,43 @@ export const FloatingTableCard: React.FC<FloatingTableCardProps> = ({
               );
             })
           )}
+        </div>
+      )}
+
+      {/* Triggers — below the columns so FK wire anchors stay put; sizes from engine/layout */}
+      {activeTab === 'schema' && table.triggers.length > 0 && (
+        <div
+          style={{ padding: `${CARD_TRIGGER_PADDING}px 8px`, display: 'flex', flexDirection: 'column', gap: CARD_TRIGGER_ROW_GAP }}
+          className={`border-t ${isDark ? 'border-slate-800/80 bg-amber-500/[0.03]' : 'border-slate-200 bg-amber-50/40'}`}
+        >
+          {table.triggers.map((trg) => {
+            const when = `${trg.timing} ${trg.events.join(' OR ')}`;
+            const writes = trg.writesTo.length > 0 ? `; escreve em ${trg.writesTo.join(', ')}` : '';
+            return (
+              <div
+                key={trg.name}
+                style={{ height: triggerRowHeight(trg.writesTo.length > 0) }}
+                title={`Trigger ${trg.name}: dispara ${when} em ${table.name}${writes}`}
+                className="flex flex-col justify-center px-2.5 text-[11px] font-mono min-w-0"
+              >
+                <div className="flex items-center gap-1.5 min-w-0" style={{ height: CARD_TRIGGER_ROW_HEIGHT }}>
+                  <Zap className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                  <span className={`truncate ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{trg.name}</span>
+                  <span className={`ml-auto shrink-0 text-[9px] px-1.5 py-0.5 rounded border font-semibold ${
+                    isDark ? 'bg-amber-500/10 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    {when}
+                  </span>
+                </div>
+                {trg.writesTo.length > 0 && (
+                  <div className={`flex items-center gap-1 pl-5 text-[10px] leading-none min-w-0 -mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <ArrowRight className="w-3 h-3 shrink-0" />
+                    <span className="truncate">escreve em {trg.writesTo.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

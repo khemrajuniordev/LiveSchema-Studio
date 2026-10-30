@@ -12,6 +12,11 @@ export const CARD_BODY_PADDING = 8;     // p-2 around the column list
 export const CARD_ROW_HEIGHT = 34;
 export const CARD_ROW_GAP = 4;          // space-y-1
 export const CARD_FOOTER_HEIGHT = 33;   // includes the 1px top border
+// Triggers section, between the columns and the footer (below every column anchor)
+export const CARD_TRIGGER_PADDING = 6;  // top and bottom, inside the 1px top border
+export const CARD_TRIGGER_ROW_HEIGHT = 24;
+export const CARD_TRIGGER_WRITES_HEIGHT = 14; // extra line "→ escreve em …"
+export const CARD_TRIGGER_ROW_GAP = 2;
 const CARD_EMPTY_BODY_HEIGHT = 64;      // "Aguardando definição de colunas..."
 
 /** Vertical center of a column row, relative to the top of its card */
@@ -31,7 +36,17 @@ export function calculateTableHeight(table: Table): number {
   const body = n === 0
     ? CARD_EMPTY_BODY_HEIGHT
     : CARD_BODY_PADDING * 2 + n * CARD_ROW_HEIGHT + (n - 1) * CARD_ROW_GAP;
-  return CARD_BORDER * 2 + CARD_HEADER_HEIGHT + body + CARD_FOOTER_HEIGHT;
+  const t = table.triggers.length;
+  const triggers = t === 0
+    ? 0
+    : 1 + CARD_TRIGGER_PADDING * 2 + (t - 1) * CARD_TRIGGER_ROW_GAP +
+      table.triggers.reduce((sum, trg) => sum + triggerRowHeight(trg.writesTo.length > 0), 0);
+  return CARD_BORDER * 2 + CARD_HEADER_HEIGHT + body + triggers + CARD_FOOTER_HEIGHT;
+}
+
+/** Height of one trigger row; triggers that write to other tables get a second line */
+export function triggerRowHeight(hasWrites: boolean): number {
+  return CARD_TRIGGER_ROW_HEIGHT + (hasWrites ? CARD_TRIGGER_WRITES_HEIGHT : 0);
 }
 
 // Computes non-overlapping positions using hierarchical DAG column packing

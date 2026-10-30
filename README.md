@@ -10,6 +10,7 @@ Feito para ajudar estudantes de SQL a entender como funciona a criação de tabe
 - **Diagrama ao vivo**: cada `CREATE TABLE` vira um card no canvas, com colunas, tipos e marcadores de `PK`, `FK`, `UNIQUE` e `NOT NULL`.
 - **Relacionamentos automáticos**: `REFERENCES` na coluna ou `FOREIGN KEY ... REFERENCES` na tabela geram as linhas entre as tabelas.
 - **Prévia dos dados**: os `INSERT INTO ... VALUES` aparecem como linhas na aba de dados de cada tabela.
+- **Triggers no card**: cada `CREATE TRIGGER` aparece na tabela em que dispara, com o momento e o evento (ex.: `AFTER UPDATE`) e as tabelas em que ele escreve. Os `INSERT` dentro de triggers, procedures e functions não viram dados de exemplo, porque só rodam quando o trigger dispara.
 - **Canvas interativo**: zoom, arrastar o canvas (segurando espaço) e arrastar as tabelas; botão de auto-layout que organiza tudo sem sobreposição.
 - **Modelos prontos**: GameStation (atividade de triggers), E-commerce & Pagamentos e SaaS Multi-tenant.
 - **Avisos do SQL**: FK para tabela ou coluna que não existe, INSERT com número errado de valores, tabela duplicada e parênteses abertos aparecem no rodapé do editor.
@@ -77,9 +78,10 @@ O parser roda direto no navegador e cobre o essencial para estudo:
 - `UNIQUE (coluna)` no nível da tabela
 - `REFERENCES tabela[(coluna)]` na coluna e `[CONSTRAINT nome] FOREIGN KEY (...) REFERENCES ...`; sem a coluna, aponta para a PK da tabela pai
 - `INSERT INTO tabela [(colunas)] VALUES (...), (...)`, incluindo funções como `NOW()` e `CONCAT(...)`
+- `CREATE TRIGGER` do MySQL (com ou sem `DELIMITER`, `BEGIN … END`, `CALL procedure()`) e do PostgreSQL (`EXECUTE FUNCTION`, com o corpo da função entre `$$`)
 - Comentários `--`, `#` e `/* */`
 
-Outros comandos (`SELECT`, `UPDATE`, triggers etc.) podem ficar no editor, mas não alteram o diagrama.
+Outros comandos (`SELECT`, `UPDATE`, `ALTER TABLE` etc.) podem ficar no editor, mas não alteram o diagrama.
 
 ## Deploy na Vercel
 

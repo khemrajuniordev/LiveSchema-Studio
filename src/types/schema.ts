@@ -29,8 +29,20 @@ export interface Table {
   name: string;
   columns: Column[];
   rows: Record<string, unknown>[];
+  /** Triggers declared ON this table */
+  triggers: Trigger[];
   position: { x: number; y: number };
   colorTag?: string;
+}
+
+export interface Trigger {
+  name: string;
+  /** BEFORE, AFTER or INSTEAD OF */
+  timing: string;
+  /** INSERT, UPDATE, DELETE, TRUNCATE (PostgreSQL allows several: INSERT OR UPDATE) */
+  events: string[];
+  /** Other tables the trigger body writes to (INSERT INTO / UPDATE / DELETE FROM) */
+  writesTo: string[];
 }
 
 export interface Relationship {
