@@ -13,6 +13,14 @@ import {
   Rows
 } from 'lucide-react';
 import type { ColumnCategory, Table } from '../types/schema';
+import {
+  CARD_BODY_PADDING,
+  CARD_FOOTER_HEIGHT,
+  CARD_HEADER_HEIGHT,
+  CARD_ROW_GAP,
+  CARD_ROW_HEIGHT,
+  CARD_WIDTH,
+} from '../engine/layout';
 
 interface FloatingTableCardProps {
   table: Table;
@@ -146,8 +154,9 @@ export const FloatingTableCard: React.FC<FloatingTableCardProps> = ({
         transform: `translate3d(${table.position.x}px, ${table.position.y}px, 0)`,
         zIndex: isSelected ? 30 : 10,
         willChange: 'transform',
+        width: CARD_WIDTH,
       }}
-      className={`w-80 rounded-2xl select-none transition-shadow duration-200 ${
+      className={`rounded-2xl select-none transition-shadow duration-200 ${
         isSelected
           ? 'ring-2 ring-indigo-500 shadow-2xl shadow-indigo-500/25'
           : isDark 
@@ -155,8 +164,8 @@ export const FloatingTableCard: React.FC<FloatingTableCardProps> = ({
             : 'hover:ring-1 hover:ring-slate-300 shadow-xl shadow-slate-200/60'
       } ${isDark ? 'glass-card-dark text-slate-100' : 'glass-card-light text-slate-900'} overflow-hidden cursor-grab active:cursor-grabbing`}
     >
-      {/* Table Header */}
-      <div className={`px-4 py-3 border-b flex items-center justify-between ${
+      {/* Table Header — fixed height keeps the FK wire anchors (engine/layout) aligned */}
+      <div style={{ height: CARD_HEADER_HEIGHT }} className={`px-4 border-b flex items-center justify-between ${
         isDark 
           ? 'bg-gradient-to-r from-slate-800/95 via-slate-800/60 to-slate-900/95 border-slate-700/60' 
           : 'bg-gradient-to-r from-slate-50 via-slate-100/70 to-slate-50 border-slate-200'
@@ -223,7 +232,10 @@ export const FloatingTableCard: React.FC<FloatingTableCardProps> = ({
 
       {/* Body: Schema Attributes View - Fits all columns without scrollbar */}
       {activeTab === 'schema' && (
-        <div className="p-2 space-y-1 pointer-events-auto">
+        <div
+          style={{ padding: CARD_BODY_PADDING, display: 'flex', flexDirection: 'column', gap: CARD_ROW_GAP }}
+          className="pointer-events-auto"
+        >
           {table.columns.length === 0 ? (
             <div className={`py-6 text-center text-xs italic ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
               Aguardando definição de colunas...
@@ -236,7 +248,8 @@ export const FloatingTableCard: React.FC<FloatingTableCardProps> = ({
                 <div
                   key={col.id}
                   id={`port-${table.name}-${col.name}`}
-                  className={`group relative flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors border border-transparent ${
+                  style={{ height: CARD_ROW_HEIGHT }}
+                  className={`group relative flex items-center justify-between px-2.5 rounded-lg transition-colors border border-transparent ${
                     isDark 
                       ? 'hover:bg-slate-700/40 hover:border-slate-700/50' 
                       : 'hover:bg-slate-100 hover:border-slate-200'
@@ -339,7 +352,7 @@ export const FloatingTableCard: React.FC<FloatingTableCardProps> = ({
       )}
 
       {/* Bottom Health / Nullability Indicator Bar */}
-      <div className={`px-4 py-2 border-t flex items-center justify-between text-[10px] pointer-events-none ${
+      <div style={{ height: CARD_FOOTER_HEIGHT }} className={`px-4 border-t flex items-center justify-between text-[10px] pointer-events-none ${
         isDark ? 'bg-slate-900/60 border-slate-800/80 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'
       }`}>
         <span className="flex items-center gap-1">

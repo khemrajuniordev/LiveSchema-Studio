@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Header } from './components/Header';
 import { SqlEditor, PRESETS } from './components/SqlEditor';
 import { InteractiveCanvas } from './components/InteractiveCanvas';
-import { parseSqlLive, calculateAutoLayout } from './engine/sqlParser';
+import { parseSqlLive } from './engine/sqlParser';
+import { calculateAutoLayout } from './engine/layout';
 import type { SqlTab } from './types/schema';
 
 const DEFAULT_TABS: SqlTab[] = [

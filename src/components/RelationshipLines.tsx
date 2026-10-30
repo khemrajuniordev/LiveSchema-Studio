@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Relationship, Table } from '../types/schema';
 import { ArrowRight } from 'lucide-react';
+import { CARD_WIDTH as cardWidth, columnAnchorY } from '../engine/layout';
 
 interface RelationshipLinesProps {
   relationships: Relationship[];
@@ -22,10 +23,6 @@ export const RelationshipLines: React.FC<RelationshipLinesProps> = ({
 
   const tableMap = new Map<string, Table>();
   tables.forEach((t) => tableMap.set(t.name.toLowerCase(), t));
-
-  const cardWidth = 320;
-  const headerHeight = 56;
-  const rowHeight = 35;
 
   // Active rel = selected or hovered
   const activeRelId = selectedRelId ?? hoveredRelId;
@@ -154,8 +151,8 @@ export const RelationshipLines: React.FC<RelationshipLinesProps> = ({
           targetTable.columns.findIndex((c) => c.name.toLowerCase() === rel.targetColumn.toLowerCase())
         );
 
-        const sourceY = sourceTable.position.y + headerHeight + sourceColIdx * rowHeight + 17;
-        const targetY = targetTable.position.y + headerHeight + targetColIdx * rowHeight + 17;
+        const sourceY = sourceTable.position.y + columnAnchorY(sourceColIdx);
+        const targetY = targetTable.position.y + columnAnchorY(targetColIdx);
 
         // Determine left or right anchor
         const isTargetToTheRight = targetTable.position.x > sourceTable.position.x;

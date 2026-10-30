@@ -28,7 +28,7 @@ export interface Table {
   id: string;
   name: string;
   columns: Column[];
-  rows: Record<string, any>[];
+  rows: Record<string, unknown>[];
   position: { x: number; y: number };
   colorTag?: string;
 }
@@ -45,8 +45,8 @@ export interface Relationship {
 export interface SchemaParseResult {
   tables: Table[];
   relationships: Relationship[];
+  /** Problems found while parsing, in Portuguese, ready to show to the user */
   errors: string[];
-  totalStatements: number;
 }
 
 export interface SqlTab {
