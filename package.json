@@ -1,8 +1,12 @@
 {
   "name": "liveschema-studio",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Visualizador reativo de banco de dados: escreva SQL e veja o diagrama ER em tempo real.",
   "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -12,8 +16,8 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "canvas-confetti": "^1.9.4",
-    "framer-motion": "^14.8.0",
     "lucide-react": "^1.64.0",
+    "monaco-editor": "0.57.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
