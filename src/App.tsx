@@ -4,7 +4,7 @@ import { SqlEditor } from './components/SqlEditor';
 import { InteractiveCanvas } from './components/InteractiveCanvas';
 import { parseSqlLive } from './engine/sqlParser';
 import { CARD_WIDTH, calculateAutoLayout } from './engine/layout';
-import { DEFAULT_TABS } from './data/defaultTabs';
+import { STARTER_SQL, createDefaultTabs } from './data/defaultTabs';
 import { PRESETS } from './data/presets';
 import { decodeShareHash, encodeShareHash } from './lib/shareLink';
 import { STORAGE_KEYS } from './lib/storage';
@@ -34,7 +34,7 @@ function loadTabs(): SqlTab[] {
     const parsed: unknown = JSON.parse(readStorage(STORAGE_KEYS.tabs) ?? 'null');
     if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(isValidTab)) return parsed;
   } catch { /* corrupted: fall back to defaults */ }
-  return DEFAULT_TABS;
+  return createDefaultTabs();
 }
 
 function loadPositions(tabs: SqlTab[]): Positions {
@@ -201,12 +201,14 @@ export function App() {
     showToast('✨ Posições organizadas sem sobreposição!');
   }, [parseResult.tables, parseResult.relationships, showToast]);
 
+  // Anything beyond the untouched starter tab counts as the user's work
+  const hasUnsavedWork = () => combinedSql.trim() !== '' && combinedSql !== STARTER_SQL;
+
   const handleApplyPreset = (key: string) => {
     const preset = PRESETS[key];
     if (!preset) return;
 
-    const hasWork = combinedSql.trim() !== '' && combinedSql !== DEFAULT_TABS.map((t) => t.content).join('\n\n');
-    if (hasWork && !window.confirm(`Carregar "${preset.label}"? As abas abertas serão substituídas.`)) {
+    if (hasUnsavedWork() && !window.confirm(`Carregar "${preset.label}"? As abas abertas serão substituídas.`)) {
       return;
     }
 
@@ -215,6 +217,17 @@ export function App() {
     setActiveTabId(id);
     setPositionsMap(layoutFor(preset.sql));
     showToast(`Carregado: ${preset.label}`);
+  };
+
+  // Start over: one blank tab and an empty canvas (theme and layout are kept)
+  const handleResetWorkspace = () => {
+    if (hasUnsavedWork() && !window.confirm('Limpar tudo? Todas as abas serão apagadas deste navegador.')) return;
+
+    const fresh = createDefaultTabs();
+    setTabs(fresh);
+    setActiveTabId(fresh[0].id);
+    setPositionsMap(new Map());
+    showToast('🧹 Workspace limpo.');
   };
 
   const handleShare = async () => {
@@ -267,6 +280,7 @@ export function App() {
               onRenameTab={handleRenameTab}
               onChangeContent={handleChangeContent}
               onApplyPreset={handleApplyPreset}
+              onResetWorkspace={handleResetWorkspace}
               tableCount={tables.length}
               errors={parseResult.errors}
               theme={theme}

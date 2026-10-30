@@ -14,6 +14,7 @@ Feito para ajudar estudantes de SQL a entender como funciona a criação de tabe
 - **Modelos prontos**: GameStation (atividade de triggers), E-commerce & Pagamentos e SaaS Multi-tenant.
 - **Avisos do SQL**: FK para tabela ou coluna que não existe, INSERT com número errado de valores, tabela duplicada e parênteses abertos aparecem no rodapé do editor.
 - **Layouts** dividido, só editor ou só canvas, e **tema claro/escuro**.
+- **Workspace individual**: cada pessoa começa com uma aba em branco, e o trabalho fica só no navegador dela (sem login, nada vai para servidor). O botão **Limpar tudo** recomeça do zero.
 - **Salvamento automático** no navegador e **link compartilhável** com o schema comprimido na própria URL. Nada é enviado para servidor: abrir um link adiciona uma aba, sem apagar o seu trabalho.
 - **Imprimir / salvar PDF** só do diagrama.
 

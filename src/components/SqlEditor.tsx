@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  RotateCcw,
 } from 'lucide-react';
 import type { SqlTab } from '../types/schema';
 import { PRESETS } from '../data/presets';
@@ -31,6 +32,7 @@ interface SqlEditorProps {
   onRenameTab: (id: string, newTitle: string) => void;
   onChangeContent: (content: string) => void;
   onApplyPreset: (presetKey: string) => void;
+  onResetWorkspace: () => void;
   tableCount: number;
   /** Parser warnings for the whole workspace */
   errors: string[];
@@ -49,6 +51,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   onRenameTab,
   onChangeContent,
   onApplyPreset,
+  onResetWorkspace,
   tableCount,
   errors,
   theme,
@@ -165,10 +168,10 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           <div className="w-5 h-5 rounded-md bg-indigo-500/20 text-indigo-500 flex items-center justify-center">
             <Code className="w-3 h-3" />
           </div>
-          <span className={`text-xs font-semibold tracking-wide ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+          <span className={`text-xs font-semibold tracking-wide whitespace-nowrap ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
             Workspace SQL
           </span>
-          <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono border ${
+          <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono border whitespace-nowrap ${
             isDark
               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
               : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -190,6 +193,19 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
             }`}
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            type="button"
+            onClick={onResetWorkspace}
+            title="Limpar tudo: começar um workspace novo"
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors ${
+              isDark
+                ? 'text-slate-400 hover:text-rose-400 hover:bg-slate-800'
+                : 'text-slate-600 hover:text-rose-600 hover:bg-slate-200'
+            }`}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span className="hidden xl:inline whitespace-nowrap">Limpar tudo</span>
           </button>
           <button
             type="button"
