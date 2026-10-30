@@ -16,6 +16,7 @@ Feito para ajudar estudantes de SQL a entender como funciona a criação de tabe
 - **Layouts** dividido, só editor ou só canvas, e **tema claro/escuro**.
 - **Workspace individual**: cada pessoa começa com uma aba em branco, e o trabalho fica só no navegador dela (sem login, nada vai para servidor). O botão **Limpar tudo** recomeça do zero.
 - **Salvamento automático** no navegador e **link compartilhável** com o schema comprimido na própria URL. Nada é enviado para servidor: abrir um link adiciona uma aba, sem apagar o seu trabalho.
+- **Exportar .sql**: junta as abas num único script, na ordem que você escolher, com prévia antes de baixar. Adiciona o `;` que faltar no fim de uma aba, avisa sobre `DELIMITER` não restaurado e pode incluir `CREATE DATABASE` + `USE` (MySQL).
 - **Imprimir / salvar PDF** só do diagrama.
 
 ## Tecnologias
@@ -52,10 +53,12 @@ src/
 ├── data/                       # Abas iniciais e modelos de exemplo
 ├── lib/
 │   ├── shareLink.ts            # Codifica/decodifica o schema na URL
+│   ├── sqlExport.ts            # Junta as abas em um arquivo .sql
 │   └── storage.ts              # Chaves do localStorage
 ├── types/schema.ts             # Tipos Table, Column, Relationship, SqlTab
 └── components/
     ├── SqlEditor.tsx           # Abas, modelos, avisos e atalhos de inserção
+    ├── ExportDialog.tsx        # Janela de exportação .sql
     ├── editor/                 # Monaco (empacotado, carregado sob demanda) e tema SQL
     ├── InteractiveCanvas.tsx   # Zoom, pan e arraste das tabelas
     ├── FloatingTableCard.tsx   # Card de cada tabela (estrutura e dados)

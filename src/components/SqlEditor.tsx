@@ -16,9 +16,11 @@ import {
   ChevronRight,
   AlertTriangle,
   RotateCcw,
+  Download,
 } from 'lucide-react';
 import type { SqlTab } from '../types/schema';
 import { PRESETS } from '../data/presets';
+import { ExportDialog } from './ExportDialog';
 
 // Monaco is the heaviest dependency by far: load it after the shell and canvas are on screen
 const MonacoSqlEditor = lazy(() => import('./editor/MonacoSqlEditor'));
@@ -61,6 +63,7 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [showErrors, setShowErrors] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
@@ -182,6 +185,19 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         </div>
 
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setShowExport(true)}
+            title="Exportar as abas como um arquivo .sql"
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors ${
+              isDark
+                ? 'text-indigo-300 hover:text-white hover:bg-slate-800'
+                : 'text-indigo-700 hover:text-indigo-900 hover:bg-slate-200'
+            }`}
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="whitespace-nowrap">Exportar</span>
+          </button>
           <button
             type="button"
             onClick={handleCopy}
@@ -440,6 +456,10 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           </span>
         </div>
       </div>
+
+      {showExport && (
+        <ExportDialog tabs={tabs} theme={theme} onClose={() => setShowExport(false)} />
+      )}
     </div>
   );
 };

@@ -355,7 +355,7 @@ function addRelationship(
 }
 
 /** Remove -- and /* *\/ comments, leaving string literals untouched */
-function stripComments(sql: string): string {
+export function stripComments(sql: string): string {
   let out = '';
   let i = 0;
   while (i < sql.length) {
