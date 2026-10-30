@@ -4,6 +4,17 @@ import { RelationshipLines } from './RelationshipLines';
 import { CanvasToolbar } from './CanvasToolbar';
 import type { Relationship, Table } from '../types/schema';
 
+/** True when keystrokes belong to a text field (Monaco, tab rename input…) rather than the canvas */
+function isTypingTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  return (
+    el.isContentEditable ||
+    ['TEXTAREA', 'INPUT', 'SELECT'].includes(el.tagName) ||
+    !!el.closest?.('.monaco-editor')
+  );
+}
+
 interface InteractiveCanvasProps {
   tables: Table[];
   relationships: Relationship[];
@@ -85,7 +96,11 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
   // Keyboard shortcuts: Space for Pan, Ctrl+ / Ctrl- / Ctrl 0 for Zoom
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !['TEXTAREA', 'INPUT'].includes((e.target as HTMLElement).tagName)) {
+      // Leave typing (and the browser's own zoom while typing) alone
+      if (isTypingTarget(e.target)) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault(); // don't "click" the focused button
         setIsSpacePressed(true);
       }
 
@@ -142,7 +157,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
     });
   }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     const target = e.target as HTMLElement;
 
     const isInsideCard = !!target.closest('.glass-card-dark') || !!target.closest('.glass-card-light');
@@ -183,6 +198,7 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
     };
 
     const handlePointerUp = () => {
+      // pointercancel (e.g. a touch turned into a system gesture) ends the drag too
       if (draggingTable) {
         setDraggingTable(null);
       }
@@ -194,11 +210,13 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
     if (isPanning || draggingTable) {
       window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointercancel', handlePointerUp);
     }
 
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
     };
   }, [draggingTable, isPanning, zoom, onTablePositionChange]);
 
@@ -216,7 +234,8 @@ export const InteractiveCanvas: React.FC<InteractiveCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      onMouseDown={handleMouseDown}
+      onPointerDown={handlePointerDown}
+      style={{ touchAction: 'none' }}
       className={`relative w-full h-full overflow-hidden canvas-dot-grid ${
         isDark ? 'theme-dark' : 'theme-light'
       } ${

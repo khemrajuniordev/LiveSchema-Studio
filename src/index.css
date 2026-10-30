@@ -90,3 +90,14 @@
 .animate-flow-fk {
   animation: flow-fk 1s linear infinite;
 }
+
+/* Print / "Salvar como PDF": only the diagram */
+@media print {
+  [data-print-hide] {
+    display: none !important;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

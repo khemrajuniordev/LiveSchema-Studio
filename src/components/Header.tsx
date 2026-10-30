@@ -6,6 +6,7 @@ import {
   Layers, 
   Maximize, 
   Columns,
+  Code2,
   Share2,
   Sun,
   Moon
@@ -38,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header
+      data-print-hide
       className={`h-14 px-4 border-b flex items-center justify-between shrink-0 select-none z-50 transition-colors ${
         isDark
           ? 'bg-slate-950 border-slate-800/80 text-slate-100'
@@ -128,6 +130,19 @@ export const Header: React.FC<HeaderProps> = ({
         <div className={`flex items-center p-1 rounded-lg border ${
           isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
         }`}>
+          <button
+            type="button"
+            onClick={() => onLayoutChange('editor')}
+            title="Apenas Editor SQL"
+            className={`px-2.5 py-1 text-xs rounded-md transition-colors flex items-center gap-1.5 font-medium ${
+              layoutMode === 'editor'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Code2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Editor</span>
+          </button>
           <button
             type="button"
             onClick={() => onLayoutChange('split')}

@@ -268,7 +268,7 @@ export const RelationshipLines: React.FC<RelationshipLinesProps> = ({
               y={midY - 14}
               width="200"
               height="28"
-              className="overflow-visible pointer-events-auto"
+              className={`overflow-visible ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`}
               style={{ opacity: isActive ? 1 : 0, transition: 'opacity 0.2s ease' }}
             >
               <div
@@ -298,8 +298,8 @@ export const RelationshipLines: React.FC<RelationshipLinesProps> = ({
                   <span className={`text-[9px] px-1 py-0.2 rounded font-bold ${
                     isDark ? 'bg-purple-500/20 text-purple-300' : 'bg-purple-100 text-purple-800'
                   }`}>PK</span>
-                  <span className={`font-medium truncate max-w-[55px] ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                    {rel.targetTable}
+                  <span className={`font-medium truncate max-w-[90px] ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    {rel.targetTable}.{rel.targetColumn}
                   </span>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import {
   ZoomIn, 
   ZoomOut, 
   LayoutGrid, 
-  Download, 
+  Printer, 
   Sparkles 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -39,7 +39,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   };
 
   return (
-    <div className={`absolute bottom-5 right-5 z-40 flex items-center gap-1.5 p-1.5 rounded-xl shadow-2xl transition-colors ${
+    <div data-print-hide className={`absolute bottom-5 right-5 z-40 flex items-center gap-1.5 p-1.5 rounded-xl shadow-2xl transition-colors ${
       isDark ? 'glass-panel-dark text-slate-200' : 'glass-panel-light text-slate-800'
     }`}>
       {/* Zoom controls */}
@@ -109,12 +109,12 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       <button
         type="button"
         onClick={onExport}
-        title="Exportar Imagem"
+        title="Imprimir ou salvar como PDF"
         className={`p-2 rounded-lg transition-colors ${
           isDark ? 'text-slate-300 hover:text-white hover:bg-slate-700/60' : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
         }`}
       >
-        <Download className="w-4 h-4" />
+        <Printer className="w-4 h-4" />
       </button>
     </div>
   );
