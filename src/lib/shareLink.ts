@@ -34,6 +34,21 @@ export async function encodeShareHash(sql: string): Promise<string> {
   return COMPRESSED + bytesToBase64Url(await pipeThrough(bytes, new CompressionStream('deflate-raw')));
 }
 
+/**
+ * Whether a hash fragment is a share link rather than a page anchor (#faq, #recursos…).
+ * Cheap and synchronous, so it can run before the page renders.
+ */
+export function isShareHash(hash: string): boolean {
+  const value = hash.replace(/^#/, '');
+  if (value.startsWith(COMPRESSED) || value.startsWith(PLAIN)) return true;
+  // Legacy links: base64 of encodeURIComponent(sql), so the decoded text only has URI-safe characters
+  try {
+    return value.length >= 8 && /^[A-Za-z0-9\-_.!~*'()%]+$/.test(atob(value));
+  } catch {
+    return false;
+  }
+}
+
 /** SQL stored in a hash fragment (with or without "#"), or null when it isn't a share link */
 export async function decodeShareHash(hash: string): Promise<string | null> {
   const value = hash.replace(/^#/, '');

@@ -4,13 +4,23 @@ import { Analytics } from '@vercel/analytics/react'
 import './index.css'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { EDITOR_PATH, isEditorPath } from './routes'
+import { isShareHash } from './lib/shareLink'
 
 const isEditor = isEditorPath(window.location.pathname)
 
-// Share links used to point at the site root (https://…/#z.…): keep them opening the editor
-const redirectToEditor = !isEditor && window.location.hash.length > 1
-if (redirectToEditor) {
+// Share links used to point at the site root (https://…/#z.…): keep them opening the editor.
+// Page anchors like #faq stay on the landing.
+const openShareLinkInEditor = () => {
   window.location.replace(`${EDITOR_PATH}${window.location.search}${window.location.hash}`)
+}
+const redirectToEditor = !isEditor && isShareHash(window.location.hash)
+if (redirectToEditor) openShareLinkInEditor()
+
+// A share link pasted into the address bar while the landing is open only changes the hash
+if (!isEditor) {
+  window.addEventListener('hashchange', () => {
+    if (isShareHash(window.location.hash)) openShareLinkInEditor()
+  })
 }
 
 // Each page only downloads its own code: the landing never loads the editor (or Monaco)

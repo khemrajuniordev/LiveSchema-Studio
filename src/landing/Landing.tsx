@@ -1,5 +1,5 @@
 // Landing page from Figma (land-liveschema, code layer "LiveSchema Studio")
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { EDITOR_PATH } from '../routes'
 import { ArrowRight, Check, Database, Sparkles, Diagram, Key, Download, Cloud, Menu, X, Chevron, Github, LinkedIn } from './icons'
 import './landing.css'
@@ -261,6 +261,12 @@ function SchemaMockup() {
 export default function Landing() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(0)
+
+  // The landing renders after its lazy chunk loads, too late for the browser to jump to #faq & co.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1))
+    if (id) document.getElementById(id)?.scrollIntoView({ behavior: 'instant' })
+  }, [])
 
   return (
     <div className="landing min-h-screen overflow-hidden bg-slate-950 text-slate-300 antialiased selection:bg-indigo-500/30 selection:text-white">
