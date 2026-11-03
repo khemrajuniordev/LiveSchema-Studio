@@ -8,6 +8,7 @@ import { STARTER_SQL, createDefaultTabs } from './data/defaultTabs';
 import { PRESETS } from './data/presets';
 import { decodeShareHash, encodeShareHash } from './lib/shareLink';
 import { STORAGE_KEYS } from './lib/storage';
+import { EDITOR_PATH } from './routes';
 import type { SqlTab } from './types/schema';
 
 type Positions = Map<string, { x: number; y: number }>;
@@ -231,7 +232,7 @@ export function App() {
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}${window.location.pathname}#${await encodeShareHash(combinedSql)}`;
+    const url = `${window.location.origin}${EDITOR_PATH}#${await encodeShareHash(combinedSql)}`;
     try {
       await navigator.clipboard.writeText(url);
       showToast('🔗 Link do schema copiado para a área de transferência!');

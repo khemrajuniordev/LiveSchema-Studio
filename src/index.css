@@ -7,10 +7,13 @@
   body {
     margin: 0;
     padding: 0;
-    overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    user-select: none;
     transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  /* Editor (/app): full-screen app, no page scroll or text selection outside the editor */
+  body.app-shell {
+    overflow: hidden;
+    user-select: none;
   }
 }
 

@@ -47,6 +47,9 @@ Abra o endereço que o Vite mostrar (normalmente `http://localhost:5173`).
 
 ```
 src/
+├── main.tsx                    # Rotas: landing em / e editor em /app
+├── routes.ts                   # Caminho do editor (/app)
+├── landing/                    # Landing page
 ├── App.tsx                     # Estado global, abas, persistência e compartilhamento
 ├── engine/
 │   ├── sqlParser.ts            # Parser de CREATE TABLE / INSERT e avisos
