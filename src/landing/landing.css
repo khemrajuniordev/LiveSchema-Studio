@@ -1,0 +1,145 @@
+/* Landing page styles from Figma (land-liveschema). Imported by Landing.tsx, so they only load on / */
+/* Fonts from the design, only inside the landing so the editor keeps its own */
+.landing {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Preflight styles <pre>/<code> with these, which :root already resolved to the global fonts */
+  --default-font-family: var(--font-sans);
+  --default-mono-font-family: var(--font-mono);
+  font-family: var(--font-sans);
+}
+
+/* Outside any layer so it wins over the bg-slate-50 utility on <body> (index.html) */
+body:has(> #root > .landing) {
+  background: #020617;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    min-width: 320px;
+    background: #020617;
+  }
+
+  a,
+  button {
+    outline: none;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    box-shadow: 0 0 0 2px #020617, 0 0 0 4px #818cf8;
+  }
+}
+
+@layer components {
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgb(129 140 248 / 0.18);
+    border-radius: 9999px;
+    background: rgb(99 102 241 / 0.07);
+    padding: 0.35rem 0.7rem;
+    color: #a5b4fc;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .icon-box {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border: 1px solid;
+    border-radius: 0.75rem;
+  }
+
+  .icon-indigo {
+    border-color: rgb(129 140 248 / 0.2);
+    background: rgb(99 102 241 / 0.1);
+    color: #a5b4fc;
+  }
+
+  .icon-violet {
+    border-color: rgb(167 139 250 / 0.2);
+    background: rgb(139 92 246 / 0.1);
+    color: #c4b5fd;
+  }
+
+  .icon-fuchsia {
+    border-color: rgb(232 121 249 / 0.2);
+    background: rgb(217 70 239 / 0.1);
+    color: #f0abfc;
+  }
+
+  .icon-blue {
+    border-color: rgb(96 165 250 / 0.2);
+    background: rgb(59 130 246 / 0.1);
+    color: #93c5fd;
+  }
+}
+
+.hero-orb {
+  background:
+    radial-gradient(circle at 50% 18%, rgb(99 102 241 / 0.18), transparent 35%),
+    radial-gradient(circle at 35% 40%, rgb(139 92 246 / 0.09), transparent 30%),
+    radial-gradient(circle at 65% 42%, rgb(217 70 239 / 0.07), transparent 30%);
+  filter: blur(8px);
+}
+
+.diagram-grid {
+  background-image:
+    linear-gradient(rgb(148 163 184 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+}
+
+.noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E");
+}
+
+.mockup-glow::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  right: 10%;
+  bottom: -10%;
+  left: 10%;
+  height: 35%;
+  border-radius: 50%;
+  background: rgb(79 70 229 / 0.2);
+  filter: blur(80px);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-float,
+  .animate-pulse {
+    animation: none !important;
+  }
+}
