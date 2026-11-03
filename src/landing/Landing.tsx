@@ -8,7 +8,6 @@ const CURRENT_YEAR = new Date().getFullYear()
 
 const navItems = [
   ['Recursos', '#recursos'],
-  ['Planos', '#planos'],
   ['IA', '#ia'],
   ['FAQ', '#faq'],
 ]
@@ -111,40 +110,10 @@ const features = [
   },
 ]
 
-const plans = [
-  {
-    name: 'Gratuito',
-    description: 'Para experimentar e estudar.',
-    price: 'R$ 0',
-    period: 'para sempre',
-    features: ['Até 5 projetos', 'Diagramas em tempo real', 'Exportação PNG', 'Anúncios discretos'],
-    cta: 'Começar grátis',
-    href: EDITOR_PATH,
-  },
-  {
-    name: 'Pro Individual',
-    description: 'Para quem constrói todos os dias.',
-    price: 'R$ 19,90',
-    period: '/ mês',
-    features: ['Projetos ilimitados', 'IA sem limites', 'Sincronização na nuvem', 'Sem anúncios', 'Exportação SVG e SQL'],
-    cta: 'Testar Pro por 7 dias',
-    featured: true,
-  },
-  {
-    name: 'Edu / Bootcamps',
-    description: 'Para ensinar com mais clareza.',
-    price: 'R$ 99,90',
-    period: '/ mês',
-    features: ['Até 50 estudantes', 'Salas de aula virtuais', 'Exercícios e correções', 'Painel de progresso', 'Suporte prioritário'],
-    cta: 'Falar com especialista',
-  },
-]
-
 const faqs = [
   ['Preciso instalar alguma coisa?', 'Não. O LiveSchema Studio funciona direto no navegador e seus diagramas são atualizados enquanto você digita.'],
   ['Quais bancos de dados são suportados?', 'Atualmente interpretamos sintaxes de PostgreSQL, MySQL e SQLite, com novos dialetos sendo adicionados continuamente.'],
   ['A IA pode alterar meu projeto?', 'A IA apenas sugere schemas e melhorias. Você sempre revisa e aprova qualquer alteração antes que ela seja aplicada.'],
-  ['O plano Edu serve para turmas maiores?', 'Sim. Para mais de 50 estudantes, criamos uma proposta personalizada com gestão de múltiplas turmas e suporte dedicado.'],
 ]
 
 function Logo() {
@@ -386,7 +355,7 @@ export default function Landing() {
             <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-500">
               <span className="flex items-center gap-1.5"><Check className="size-3.5 text-emerald-400" /> Sem cartão de crédito</span>
               <span className="flex items-center gap-1.5"><Check className="size-3.5 text-emerald-400" /> Pronto em 30 segundos</span>
-              <span className="flex items-center gap-1.5"><Check className="size-3.5 text-emerald-400" /> Plano grátis permanente</span>
+              <span className="flex items-center gap-1.5"><Check className="size-3.5 text-emerald-400" /> 100% gratuito</span>
             </div>
             <SchemaMockup />
           </div>
@@ -481,65 +450,6 @@ export default function Landing() {
           </div>
         </section>
 
-        <section id="planos" className="border-y border-white/[0.06] bg-slate-900/20 px-5 py-24 sm:px-8 lg:py-32">
-          <div className="mx-auto max-w-7xl">
-            <div className="mx-auto max-w-2xl text-center">
-              <span className="section-label">Planos simples</span>
-              <h2 className="mt-4 text-balance text-3xl font-semibold tracking-[-0.03em] text-white sm:text-5xl">
-                Comece grátis. Evolua quando precisar.
-              </h2>
-              <p className="mt-5 text-base leading-7 text-slate-400">
-                Sem taxas escondidas e sem contratos longos. Cancele quando quiser.
-              </p>
-            </div>
-            <div className="mt-14 grid items-stretch gap-5 lg:grid-cols-3">
-              {plans.map((plan) => (
-                <article
-                  key={plan.name}
-                  className={`relative flex flex-col rounded-2xl border p-6 sm:p-7 ${
-                    plan.featured
-                      ? 'border-indigo-400/40 bg-gradient-to-b from-indigo-500/[0.12] to-slate-950 shadow-[0_0_60px_rgba(99,102,241,0.1)]'
-                      : 'border-white/[0.08] bg-slate-950/60'
-                  }`}
-                >
-                  {plan.featured && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-indigo-300/20 bg-indigo-500 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white shadow-lg shadow-indigo-950">
-                      Mais escolhido
-                    </span>
-                  )}
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
-                    <p className="mt-1 text-sm text-slate-500">{plan.description}</p>
-                  </div>
-                  <div className="mt-7 flex items-end gap-2">
-                    <span className="text-4xl font-semibold tracking-tight text-white">{plan.price}</span>
-                    <span className="mb-1 text-xs text-slate-500">{plan.period}</span>
-                  </div>
-                  <div className="my-7 h-px bg-white/[0.07]" />
-                  <ul className="flex-1 space-y-3.5">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm text-slate-400">
-                        <Check className={`size-4 ${plan.featured ? 'text-indigo-300' : 'text-emerald-400'}`} />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href={plan.href ?? '#inicio'}
-                    className={`mt-8 inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                      plan.featured
-                        ? 'bg-white text-slate-950 hover:bg-indigo-50'
-                        : 'border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
-                    }`}
-                  >
-                    {plan.cta}
-                  </a>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section id="faq" className="px-5 py-24 sm:px-8 lg:py-32">
           <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
             <div>
@@ -602,7 +512,6 @@ export default function Landing() {
             <Logo />
             <div className="flex flex-wrap gap-x-6 gap-y-3 text-xs text-slate-500">
               <a href="#recursos" className="transition hover:text-white">Recursos</a>
-              <a href="#planos" className="transition hover:text-white">Planos</a>
               <a href="#faq" className="transition hover:text-white">Central de ajuda</a>
               <a href="#inicio" className="transition hover:text-white">Privacidade</a>
               <a href="#inicio" className="transition hover:text-white">Termos</a>
