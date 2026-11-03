@@ -13,6 +13,7 @@ Feito para ajudar estudantes de SQL a entender como funciona a criação de tabe
 - **Triggers no card**: cada `CREATE TRIGGER` aparece na tabela em que dispara, com o momento e o evento (ex.: `AFTER UPDATE`) e as tabelas em que ele escreve. Os `INSERT` dentro de triggers, procedures e functions não viram dados de exemplo, porque só rodam quando o trigger dispara.
 - **Canvas interativo**: zoom, arrastar o canvas (segurando espaço) e arrastar as tabelas; botão de auto-layout que organiza tudo sem sobreposição.
 - **Modelos prontos**: GameStation (atividade de triggers), E-commerce & Pagamentos e SaaS Multi-tenant.
+- **Executar consultas**: o botão **Executar** (ou Ctrl+Enter) roda todas as abas, em ordem, num SQLite dentro do navegador (WebAssembly) e mostra os resultados dos `SELECT` e os erros em português. A sintaxe comum do MySQL é traduzida (`AUTO_INCREMENT`, `ENGINE=…`, `ENUM`, `DELIMITER`, `NOW()`, `CONCAT`, `IF()`, triggers com `IF … END IF` e `SET NEW.coluna`); procedures e functions não rodam.
 - **Avisos do SQL**: FK para tabela ou coluna que não existe, INSERT com número errado de valores, tabela duplicada e parênteses abertos aparecem no rodapé do editor.
 - **Layouts** dividido, só editor ou só canvas, e **tema claro/escuro**.
 - **Workspace individual**: cada pessoa começa com uma aba em branco, e o trabalho fica só no navegador dela (sem login, nada vai para servidor). O botão **Limpar tudo** recomeça do zero.
@@ -53,6 +54,7 @@ src/
 ├── App.tsx                     # Estado global, abas, persistência e compartilhamento
 ├── engine/
 │   ├── sqlParser.ts            # Parser de CREATE TABLE / INSERT e avisos
+│   ├── sqlRunner.ts            # Executa o SQL num SQLite no navegador (MySQL → SQLite)
 │   └── layout.ts               # Medidas dos cards, âncoras das linhas e auto-layout
 ├── data/                       # Abas iniciais e modelos de exemplo
 ├── lib/
@@ -63,6 +65,7 @@ src/
 └── components/
     ├── SqlEditor.tsx           # Abas, modelos, avisos e atalhos de inserção
     ├── ExportDialog.tsx        # Janela de exportação .sql
+    ├── ResultsPanel.tsx        # Resultados do botão Executar
     ├── editor/                 # Monaco (empacotado, carregado sob demanda) e tema SQL
     ├── InteractiveCanvas.tsx   # Zoom, pan e arraste das tabelas
     ├── FloatingTableCard.tsx   # Card de cada tabela (estrutura e dados)
@@ -84,7 +87,7 @@ O parser roda direto no navegador e cobre o essencial para estudo:
 - `CREATE TRIGGER` do MySQL (com ou sem `DELIMITER`, `BEGIN … END`, `CALL procedure()`) e do PostgreSQL (`EXECUTE FUNCTION`, com o corpo da função entre `$$`)
 - Comentários `--`, `#` e `/* */`
 
-Outros comandos (`SELECT`, `UPDATE`, `ALTER TABLE` etc.) podem ficar no editor, mas não alteram o diagrama.
+Outros comandos (`SELECT`, `UPDATE`, `ALTER TABLE` etc.) não alteram o diagrama, mas rodam com o botão **Executar**.
 
 ## Deploy na Vercel
 

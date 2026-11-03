@@ -17,10 +17,14 @@ import {
   AlertTriangle,
   RotateCcw,
   Download,
+  Play,
+  Loader2,
 } from 'lucide-react';
 import type { SqlTab } from '../types/schema';
 import { PRESETS } from '../data/presets';
 import { ExportDialog } from './ExportDialog';
+import { ResultsPanel } from './ResultsPanel';
+import type { RunResult } from '../engine/sqlRunner';
 
 // Monaco is the heaviest dependency by far: load it after the shell and canvas are on screen
 const MonacoSqlEditor = lazy(() => import('./editor/MonacoSqlEditor'));
@@ -64,6 +68,8 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   const [editingTitle, setEditingTitle] = useState('');
   const [showErrors, setShowErrors] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [runResult, setRunResult] = useState<RunResult | null>(null);
+  const [running, setRunning] = useState(false);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
@@ -90,9 +96,28 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
   }, [activeTabId]);
 
 
+  // Run every tab, in order, on a fresh in-browser SQLite (loaded on first use)
+  const handleRun = async () => {
+    if (running) return;
+    setRunning(true);
+    try {
+      const { runWorkspace } = await import('../engine/sqlRunner');
+      setRunResult(await runWorkspace(tabs));
+    } catch (err) {
+      setRunResult({ ms: 0, items: [{ kind: 'error', tab: '', line: 0, sql: '', message: `Não foi possível iniciar o banco: ${String(err)}` }] });
+    } finally {
+      setRunning(false);
+    }
+  };
+  // Ctrl/Cmd+Enter in Monaco calls the latest handleRun
+  const runRef = useRef(handleRun);
+  useEffect(() => { runRef.current = handleRun; });
+
   // Sync editor content when switching tabs (editor keeps its own model)
   const handleEditorMount = useCallback((ed: editor.IStandaloneCodeEditor) => {
     editorRef.current = ed;
+    // KeyMod.CtrlCmd | KeyCode.Enter, as numbers so the monaco module stays out of this chunk
+    ed.addCommand(2048 | 3, () => runRef.current());
   }, []);
 
   const handleCopy = async () => {
@@ -185,6 +210,16 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
         </div>
 
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={handleRun}
+            disabled={running}
+            title="Executar todas as abas num banco SQLite (Ctrl+Enter)"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-60"
+          >
+            {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+            <span className="whitespace-nowrap">Executar</span>
+          </button>
           <button
             type="button"
             onClick={() => setShowExport(true)}
@@ -388,6 +423,10 @@ export const SqlEditor: React.FC<SqlEditorProps> = ({
           />
         </Suspense>
       </div>
+
+      {runResult && (
+        <ResultsPanel result={runResult} isDark={isDark} onClose={() => setRunResult(null)} />
+      )}
 
       {/* Parser warnings */}
       {showErrors && errors.length > 0 && (
